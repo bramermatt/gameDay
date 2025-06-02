@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameDay</title>
+  <link rel="icon" href="img/baseball-bat-ball-solid.svg" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    .game-card {
+      transition: all 0.2s ease;
+    }
+    .game-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+
+<header class="bg-blue-600 p-3 sticky top-0 z-50">
+  <nav>
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="#" class="text-white text-lg font-bold flex items-center gap-2">
+        <i class="fa-solid fa-baseball-bat-ball"></i> GameDay
+      </a>
+      <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none" aria-label="Open menu">
+        <i class="fa fa-bars fa-lg"></i>
+      </button>
+      <ul class="hidden md:flex space-x-3 text-sm">
+        <li><a href="#" class="font-bold text-white underline underline-offset-2 decoration-2 decoration-white hover:text-white hover:underline" aria-current="page" id="mlb-link">MLB</a></li>
+        <!-- <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">NBA</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">NFL</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">NHL</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">Tennis</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">Soccer</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">Golf</a></li>
+        <li><a href="#" class="text-gray-300 font-normal hover:text-white hover:underline">NCAA</a></li> -->
+      </ul>
+    </div>
+    <div id="mobile-menu" class="md:hidden hidden mt-2">
+      <ul class="flex flex-col space-y-1 bg-blue-700 rounded p-3 text-sm">
+        <li><a href="#" class="font-bold text-white underline underline-offset-2 decoration-2 decoration-white hover:text-white hover:underline" id="mlb-mobile-link">MLB</a></li>
+        <!-- <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">NBA</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">NFL</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">NHL</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">Tennis</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">Soccer</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">Golf</a></li>
+        <li><a href="#" class="text-gray-200 font-normal hover:text-white hover:underline">NCAA</a></li> -->
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-6xl mx-auto p-2 sticky top-16 z-40">
+    <div class="flex items-center justify-center gap-3 bg-blue-100 rounded-lg shadow-md py-3 px-4">
+      <i class="fa-solid fa-baseball-bat-ball text-blue-600 text-2xl"></i>
+      <span class="text-lg font-semibold text-blue-700 tracking-wide">MLB Games Today</span>
+      <span class="animate-pulse ml-2 text-blue-400"><i class="fa-solid fa-circle"></i></span>
+
+    </div>
+
+          <p class="mt-4 text-center text-gray-700 text-base max-w-2xl mx-auto mb-10">
+            Stay up-to-date with all Major League Baseball games happening today. Instantly see scores, matchups, and live updates—no sign-up required. Perfect for fans who want quick, reliable info at a glance!
+          </p>
+    <div id="games" class="space-y-2"></div>
+  </div>
+  
+  <script src="js/script.js"></script>
+  
+</body>
+</html>

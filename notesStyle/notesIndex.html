@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Game Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.0.24/dist/tailwind.min.js"></script>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        #calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-gap: 1em;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-100">
+
+<div class="flex">
+    <!-- Left Pane: Calendar & Filters -->
+    <div class="w-1/4 p-4 bg-white shadow-lg">
+        <!-- Calendar -->
+        <h2 class="text-2xl font-bold mb-4">Calendar</h2>
+        <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+
+        <!-- Filters -->
+        <h3 class="text-xl font-bold mt-6 mb-2">Filters</h3>
+        <div>
+            <label for="league-filter" class="block mb-2">League</label>
+            <select id="league-filter" class="w-full p-2 border rounded mb-4">
+                <option value="">Select League</option>
+                <option value="mlb">MLB</option>
+                <!-- Add more leagues as needed -->
+            </select>
+
+            <label for="team-filter" class="block mb-2">Team</label>
+            <select id="team-filter" class="w-full p-2 border rounded mb-4">
+                <option value="">Select Team</option>
+                <!-- Add teams dynamically -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Middle Pane: Games for the Selected Date -->
+    <div class="w-1/2 p-4 bg-white shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">Games for Today</h2>
+        <div id="games" class="space-y-4"></div>
+    </div>
+
+    <!-- Right Pane: Full Game Info -->
+    <div class="w-1/4 p-4 bg-white shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">Game Info</h2>
+        <div id="game-info" class="text-gray-700"></div>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('games');
+    const gameInfoContainer = document.getElementById('game-info');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const leagueFilter = document.getElementById('league-filter');
+    const teamFilter = document.getElementById('team-filter');
+
+    // Helper function to create and render the calendar
+    function renderCalendar() {
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        // First day of the month
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+        const daysInMonth = lastDay.getDate();
+        const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        let calendarHTML = '';
+        
+        // Empty cells for previous month's days
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            calendarHTML += `<div class="w-12 h-12"></div>`; // Empty space
+        }
+        
+        // Days of the current month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            const isToday = today.toISOString().split('T')[0] === dateStr;
+            const dayClass = isToday ? 'bg-blue-500 text-white font-bold' : 'bg-gray-200 text-gray-700';
+
+            calendarHTML += `
+                <div class="w-12 h-12 flex items-center justify-center cursor-pointer ${dayClass}" data-date="${dateStr}">
+                    ${day}
+                </div>
+            `;
+        }
+
+        calendarGrid.innerHTML = calendarHTML;
+
+        // Add event listener to each calendar day
+        const dayElements = document.querySelectorAll('#calendar-grid .w-12');
+        dayElements.forEach(dayElement => {
+            dayElement.addEventListener('click', (e) => {
+                const selectedDate = e.target.dataset.date;
+                loadGames(selectedDate);
+            });
+        });
+    }
+
+    // Helper to fetch and render games for a given date
+    function loadGames(dateStr) {
+        container.innerHTML = '<p class="text-center text-gray-400">Loading...</p>';
+        const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${dateStr}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const games = data.dates?.[0]?.games || [];
+                if (games.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500">No games were played on this date.</p>';
+                    return;
+                }
+                container.innerHTML = '';
+                games.forEach(game => {
+                    const { gameDate, status, teams, venue } = game;
+                    const away = teams.away.team.name;
+                    const home = teams.home.team.name;
+                    const awayScore = teams.away.score ?? '-';
+                    const homeScore = teams.home.score ?? '-';
+                    const state = status.detailedState;
+                    const time = new Date(gameDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+                    const location = venue.name;
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded shadow';
+                    
+                    let scoreLine = '';
+                    if ((state === 'Final' || state === 'In Progress') && awayScore !== '-' && homeScore !== '-') {
+                        let awayClass = '';
+                        let homeClass = '';
+                        if (awayScore > homeScore) {
+                            awayClass = 'text-red-600 font-bold';
+                            homeClass = 'text-gray-400';
+                        } else if (homeScore > awayScore) {
+                            homeClass = 'text-red-600 font-bold';
+                            awayClass = 'text-gray-400';
+                        }
+                        scoreLine = `
+                            <div class="mt-2 font-bold">
+                                <span class="${awayClass}">${away} (${awayScore})</span> – 
+                                <span class="${homeClass}">${home} (${homeScore})</span>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex flex-col items-end">
+                                <span class="text-base font-bold text-gray-800">${away}</span>
+                            </div>
+                            <span class="mx-3 text-2xl font-extrabold text-blue-600">@</span>
+                            <div class="flex flex-col items-start">
+                                <span class="text-base font-bold text-gray-800">${home}</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-1">Time: ${time}</div>
+                        <div class="text-sm text-gray-700 mb-1">Location: ${location}</div>
+                        <div class="text-sm text-gray-600">Status: ${state}</div>
+                        ${scoreLine}
+                    `;
+
+                    // Add click event to show full game info
+                    card.addEventListener('click', () => {
+                        showGameInfo(game);
+                    });
+
+                    container.appendChild(card);
+                });
+            })
+            .catch(err => {
+                console.error('Error loading games:', err);
+                container.innerHTML = '<p class="text-center text-red-500">Failed to load games.</p>';
+            });
+    }
+
+    // Show full game info
+    function showGameInfo(game) {
+        const { gameDate, status, teams, venue } = game;
+        const away = teams.away.team.name;
+        const home = teams.home.team.name;
+        const awayScore = teams.away.score ?? '-';
+        const homeScore = teams.home.score ?? '-';
+        const state = status.detailedState;
+        const time = new Date(gameDate).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+        const location = venue.name;
+
+        gameInfoContainer.innerHTML = `
+            <h3 class="text-xl font-bold mb-2">${away} vs ${home}</h3>
+            <p class="mb-2">Time: ${time}</p>
+            <p class="mb-2">Location: ${location}</p>
+            <p class="mb-2">Status: ${state}</p>
+            <p class="mb-2">Score: ${away} ${awayScore} - ${home} ${homeScore}</p>
+        `;
+    }
+
+    // Initial render and load today's games
+    renderCalendar();
+    loadGames(new Date().toISOString().split('T')[0]);
+</script>
+
+</body>
+</html>
